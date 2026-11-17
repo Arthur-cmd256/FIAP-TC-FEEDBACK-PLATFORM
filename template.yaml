@@ -5,6 +5,10 @@ Parameters:
   AdminEmail:
     Type: String
     Description: E-mail do administrador que recebe os avisos
+  CronRelatorio:
+    Type: String
+    Default: cron(0 11 ? * MON *)
+    Description: Agendamento do relatorio em UTC (padrao - segunda-feira 08:00 em Brasilia)
 
 Globals:
   Function:
@@ -106,6 +110,27 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref UrgenciaTopic
+  
+  RelatorioFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Gera e envia o relatorio semanal de feedbacks
+      Timeout: 60
+      Environment:
+        Variables:
+          QUARKUS_LAMBDA_HANDLER: gerar-relatorio-semanal
+          TABELA_AVALIACOES: !Ref AvaliacoesTable
+          TOPICO_ADMIN_ARN: !Ref AdminTopic
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AvaliacoesTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt AdminTopic.TopicName
+      Events:
+        Semanal:
+          Type: Schedule
+          Properties:
+            Schedule: !Ref CronRelatorio
 
 Outputs:
   ReceberFunctionName:
@@ -120,3 +145,5 @@ Outputs:
     Value: !Ref FeedbackApiApiKey
   UrgenciaTopicArn:
     Value: !Ref UrgenciaTopic
+  RelatorioFunctionName:
+    Value: !Ref RelatorioFunction

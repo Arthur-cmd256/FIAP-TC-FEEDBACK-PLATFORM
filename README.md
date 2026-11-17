@@ -75,3 +75,7 @@ This example contains a Quarkus Greeting Lambda ready for Amazon.
 ## Limitação conhecida
 
 Para avaliações críticas, a aplicação grava a avaliação no DynamoDB antes de publicar o aviso no SNS. Essa ordem evita que um aviso seja enviado para uma avaliação que não foi armazenada. Porém, se a publicação no SNS falhar, a exceção é propagada e a API responde com erro, mesmo que a avaliação já esteja gravada no banco. Para este projeto, esse comportamento é aceitável e o erro dispara o alarme configurado.
+
+## Consulta de avaliações
+
+A busca de avaliações a partir de uma data usa `Scan` com filtro no DynamoDB. Para o volume atual deste projeto, o custo e o desempenho dessa abordagem são aceitáveis. O filtro é aplicado após a leitura dos itens, portanto, se o volume crescer, uma melhoria futura é adicionar um GSI por dia e consultar esse índice com `Query`, evitando varrer a tabela inteira.

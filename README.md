@@ -148,12 +148,12 @@ Resposta `400` (nota fora da faixa):
 
 Exemplo do e-mail de urgência:
 
-![alt text](image.png)
+![alt text](docs/email-urgencia.png)
 
 
 Exemplo do e-mail do relatório semanal:
 
-![alt text](image-1.png)
+![alt text](docs/email-relatorio-semanal.png)
 
 ## 6. Segurança e governança
 

@@ -43,6 +43,8 @@ Resources:
           Throttle:
             RateLimit: 10
             BurstLimit: 20
+  UrgenciaTopic:
+    Type: AWS::SNS::Topic
 
   ReceberFunction:
     Type: AWS::Serverless::Function
@@ -52,9 +54,12 @@ Resources:
         Variables:
           QUARKUS_LAMBDA_HANDLER: receber-avaliacao
           TABELA_AVALIACOES: !Ref AvaliacoesTable
+          TOPICO_URGENCIA_ARN: !Ref UrgenciaTopic
       Policies:
         - DynamoDBWritePolicy:
             TableName: !Ref AvaliacoesTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt UrgenciaTopic.TopicName
       Events:
         PostAvaliacao:
           Type: Api
@@ -74,3 +79,5 @@ Outputs:
   ApiKeyId:
     Description: ID da API Key
     Value: !Ref FeedbackApiApiKey
+  UrgenciaTopicArn:
+    Value: !Ref UrgenciaTopic

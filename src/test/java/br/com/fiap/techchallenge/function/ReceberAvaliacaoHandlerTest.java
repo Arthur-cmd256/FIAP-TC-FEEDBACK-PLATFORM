@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
+import br.com.fiap.techchallenge.publisher.UrgenciaPublisher;
 import br.com.fiap.techchallenge.repository.AvaliacaoRepository;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -24,6 +25,9 @@ class ReceberAvaliacaoHandlerTest {
 
     @InjectMock
     AvaliacaoRepository repository;
+
+    @InjectMock
+    UrgenciaPublisher urgenciaPublisher;
 
     private APIGatewayProxyResponseEvent chamar(String body) {
         return handler.handleRequest(new APIGatewayProxyRequestEvent().withBody(body), null);
@@ -73,6 +77,18 @@ class ReceberAvaliacaoHandlerTest {
         assertEquals(400, chamar(null).getStatusCode());
 
         verify(repository, never()).salvar(any());
+    }
+
+    @Test
+    void avaliacaoCriticaPublicaEventoDeUrgencia() {
+        chamar("{\"descricao\":\"Aula confusa\",\"nota\":2}");
+        verify(urgenciaPublisher).publicar(any());
+    }
+
+    @Test
+    void avaliacaoNaoCriticaNaoPublicaEvento() {
+        chamar("{\"descricao\":\"Gostei\",\"nota\":9}");
+        verify(urgenciaPublisher, never()).publicar(any());
     }
 
 }

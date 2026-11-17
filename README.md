@@ -71,3 +71,7 @@ This example contains a Quarkus Greeting Lambda ready for Amazon.
 
 
 # FIAP-TC-FEEDBACK-PLATFORM
+
+## Limitação conhecida
+
+Para avaliações críticas, a aplicação grava a avaliação no DynamoDB antes de publicar o aviso no SNS. Essa ordem evita que um aviso seja enviado para uma avaliação que não foi armazenada. Porém, se a publicação no SNS falhar, a exceção é propagada e a API responde com erro, mesmo que a avaliação já esteja gravada no banco. Para este projeto, esse comportamento é aceitável e o erro dispara o alarme configurado.

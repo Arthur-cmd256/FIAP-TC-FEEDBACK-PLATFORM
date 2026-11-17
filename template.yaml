@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Tech Challenge Fase 4 - Plataforma de feedback
+Parameters:
+  AdminEmail:
+    Type: String
+    Description: E-mail do administrador que recebe os avisos
 
 Globals:
   Function:
@@ -30,6 +34,7 @@ Resources:
         SSEType: KMS
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+
   FeedbackApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -43,8 +48,22 @@ Resources:
           Throttle:
             RateLimit: 10
             BurstLimit: 20
+
   UrgenciaTopic:
     Type: AWS::SNS::Topic
+
+  AdminTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AdminEmail
+
+  NotificacaoDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 1209600
 
   ReceberFunction:
     Type: AWS::Serverless::Function
@@ -67,6 +86,26 @@ Resources:
             RestApiId: !Ref FeedbackApi
             Path: /avaliacao
             Method: post      
+  
+  NotificarFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Envia o e-mail de aviso de urgencia ao administrador
+      Environment:
+        Variables:
+          QUARKUS_LAMBDA_HANDLER: notificar-urgencia
+          TOPICO_ADMIN_ARN: !Ref AdminTopic
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt NotificacaoDLQ.Arn
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt AdminTopic.TopicName
+      Events:
+        AvaliacaoCritica:
+          Type: SNS
+          Properties:
+            Topic: !Ref UrgenciaTopic
 
 Outputs:
   ReceberFunctionName:

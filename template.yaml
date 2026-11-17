@@ -30,6 +30,19 @@ Resources:
         SSEType: KMS
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+  FeedbackApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-api"
+      StageName: prod
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Plano de uso da API de feedback
+          Throttle:
+            RateLimit: 10
+            BurstLimit: 20
 
   ReceberFunction:
     Type: AWS::Serverless::Function
@@ -42,9 +55,22 @@ Resources:
       Policies:
         - DynamoDBWritePolicy:
             TableName: !Ref AvaliacoesTable
+      Events:
+        PostAvaliacao:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FeedbackApi
+            Path: /avaliacao
+            Method: post      
 
 Outputs:
   ReceberFunctionName:
     Value: !Ref ReceberFunction
   TabelaAvaliacoes:
     Value: !Ref AvaliacoesTable
+  ApiUrl:
+    Description: Endpoint de recebimento de avaliacoes
+    Value: !Sub "https://${FeedbackApi}.execute-api.${AWS::Region}.amazonaws.com/prod/avaliacao"
+  ApiKeyId:
+    Description: ID da API Key
+    Value: !Ref FeedbackApiApiKey

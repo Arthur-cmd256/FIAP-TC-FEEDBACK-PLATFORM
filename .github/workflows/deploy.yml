@@ -1,0 +1,57 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-2
+  STACK_NAME: sam-app
+
+permissions:
+  id-token: write   # necessario para o login via OIDC
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Build e testes
+        run: mvn -B verify
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Empacotar funcoes (gera target/function.zip)
+        run: mvn -B package -DskipTests
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy com SAM
+        run: >
+          sam deploy
+          --stack-name ${{ env.STACK_NAME }}
+          --region ${{ env.AWS_REGION }}
+          --capabilities CAPABILITY_IAM
+          --resolve-s3
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --parameter-overrides AdminEmail=${{ secrets.ADMIN_EMAIL }}

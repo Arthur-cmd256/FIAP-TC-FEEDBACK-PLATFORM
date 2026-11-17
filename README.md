@@ -79,3 +79,7 @@ Para avaliações críticas, a aplicação grava a avaliação no DynamoDB antes
 ## Consulta de avaliações
 
 A busca de avaliações a partir de uma data usa `Scan` com filtro no DynamoDB. Para o volume atual deste projeto, o custo e o desempenho dessa abordagem são aceitáveis. O filtro é aplicado após a leitura dos itens, portanto, se o volume crescer, uma melhoria futura é adicionar um GSI por dia e consultar esse índice com `Query`, evitando varrer a tabela inteira.
+
+## Autenticação do pipeline de deploy
+
+O ideal é autenticar o GitHub Actions na AWS por OIDC, assumindo uma role IAM com privilégios mínimos e restrita ao repositório e ao contexto de deploy. A SCP da organização impediu a criação do provedor OIDC necessário na conta AWS. Por isso, como alternativa temporária, o pipeline usa as credenciais `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` armazenadas nos secrets do GitHub. Migrar para OIDC é uma melhoria futura.

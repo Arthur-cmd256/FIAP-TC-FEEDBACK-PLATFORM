@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.com.fiap.techchallenge.dto.AvaliacaoRequest;
 import br.com.fiap.techchallenge.model.Avaliacao;
 import br.com.fiap.techchallenge.model.Urgencia;
+import br.com.fiap.techchallenge.repository.AvaliacaoRepository;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.validation.ConstraintViolation;
@@ -33,6 +34,9 @@ public class ReceberAvaliacaoHandler implements RequestHandler<APIGatewayProxyRe
 
     @Inject
     Validator validator;
+
+    @Inject
+    AvaliacaoRepository repository;
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
@@ -64,6 +68,8 @@ public class ReceberAvaliacaoHandler implements RequestHandler<APIGatewayProxyRe
                 request.nota(),
                 urgencia,
                 Instant.now().toString());
+
+        repository.salvar(avaliacao);
 
         LOG.infof("Avaliacao %s recebida (nota=%d, urgencia=%s)", avaliacao.id(), avaliacao.nota(), urgencia);
 

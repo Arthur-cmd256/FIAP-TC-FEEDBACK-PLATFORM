@@ -2,7 +2,8 @@
 
 Aplicação serverless na AWS para receber avaliações de aulas, avisar os administradores sobre avaliações críticas e gerar um relatório semanal. Desenvolvida com **Quarkus (Java 25)**, **AWS Lambda**, **API Gateway**, **DynamoDB**, **SNS** e **EventBridge**, com infraestrutura como código (**AWS SAM**) e deploy automatizado (**GitHub Actions**).
 
-- **Vídeo de demonstração:** [PREENCHER: link]
+- **Vídeo de demonstração:** [vídeo](https://1drv.ms/v/c/cfd906eeb0c0f7d4/IQCLQLULaxsKQZLBm7SBe8AVAZcLhjOSZucoSQlgxpLVWMo?e=vM0AmE)
+- **Vídeo de demonstração:** 
 - **Integrante(s):** Arthur Nascimento - RM370651
 
 ## Sumário
